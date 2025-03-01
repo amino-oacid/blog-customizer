@@ -10,19 +10,24 @@ import {
 	ArticleStateType,
 	backgroundColors,
 	contentWidthArr,
+	defaultArticleState,
 	fontColors,
 	fontFamilyOptions,
 	fontSizeOptions,
 } from 'src/constants/articleProps';
 import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
+import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
 
 type ArticleParamsFormProps = {
 	articleState: ArticleStateType;
 	setArticleState: (props: ArticleStateType) => void;
 };
 
-export const ArticleParamsForm = ({ articleState }: ArticleParamsFormProps) => {
+export const ArticleParamsForm = ({
+	articleState,
+	setArticleState,
+}: ArticleParamsFormProps) => {
 	const refElement = useRef<HTMLDivElement | null>(null);
 	const [isSidebarOpen, setSidebarOpen] = useState(false);
 	const [fontFamily, setFontFamily] = useState(articleState.fontFamilyOption);
@@ -32,6 +37,36 @@ export const ArticleParamsForm = ({ articleState }: ArticleParamsFormProps) => {
 		articleState.backgroundColor
 	);
 	const [contentWidth, setContentWidth] = useState(articleState.contentWidth);
+
+	// Обработчик применения значений свойств
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		setArticleState({
+			...articleState,
+			fontFamilyOption: fontFamily,
+			fontSizeOption: fontSize,
+			fontColor: fontColor,
+			backgroundColor: backgroundColor,
+			contentWidth: contentWidth,
+		});
+	};
+
+	// Обработчик сброса значений свойств до дефолтных
+	const handleReset = () => {
+		setArticleState(defaultArticleState);
+		setFontFamily(defaultArticleState.fontFamilyOption);
+		setFontsize(defaultArticleState.fontSizeOption);
+		setFontColor(defaultArticleState.fontColor);
+		setBackgroundColor(defaultArticleState.backgroundColor);
+		setContentWidth(defaultArticleState.contentWidth);
+	};
+
+	// Обработчик клика вне сайдбара
+	useOutsideClickClose({
+		isOpen: isSidebarOpen,
+		rootRef: refElement,
+		onClose: () => setSidebarOpen(false),
+	});
 
 	return (
 		<div ref={refElement}>
@@ -43,7 +78,10 @@ export const ArticleParamsForm = ({ articleState }: ArticleParamsFormProps) => {
 				className={clsx(styles.container, {
 					[styles.container_open]: isSidebarOpen,
 				})}>
-				<form className={styles.form}>
+				<form
+					className={styles.form}
+					onSubmit={handleSubmit}
+					onReset={handleReset}>
 					<Text size={31} weight={800} uppercase>
 						Задайте параметры
 					</Text>
